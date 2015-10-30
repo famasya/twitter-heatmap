@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Heatmaps</title>
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		#map {
+			height: 100%;
+		}
+		#floating-panel {
+			position: absolute;
+			left: 40%;
+			top: 10px;
+			z-index: 5;
+			background-color: rgba(255,255,255,.7);
+			padding: 5px;
+			text-align: center;
+			line-height: 30px;
+			padding-left: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="floating-panel">
+		Who's talking about Jokowi? <span id="c">0</span> men and bots!
+	</div>
+	<div id="map"></div>
+	<script src="/socket.io/socket.io.js"></script>
+	<script async defer
+	src="https://maps.googleapis.com/maps/api/js?key=XXX&signed_in=true&libraries=visualization&callback=initMap">
+</script>
+<script>
+	var map, heatmap;
+	var points = new Array();
+
+	function drawMap(){
+		heatmap = new google.maps.visualization.HeatmapLayer({
+			data: points,
+			map: map
+		});
+	}
+
+	function initMap() {
+		var points = new google.maps.MVCArray();
+		points.push(new google.maps.LatLng());
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 3,
+			center: {lat: -7.265757, lng: 112.734146},
+			mapTypeId: google.maps.MapTypeId.SATELLITE
+		});
+
+		setInterval(function(){
+			drawMap();
+		},5000)
+	}
+	var c = 0;
+	var socket = io(window.location.href);
+	socket.on('push', function (data) {
+		c++;
+		document.getElementById('c').innerHTML = c;
+		points.push(new google.maps.LatLng(data.lat,data.lng));
+	});
+</script>
+</body>
+</html>
